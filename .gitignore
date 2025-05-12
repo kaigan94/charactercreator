@@ -1,0 +1,42 @@
+### Java / Maven ###
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.log
+
+### IntelliJ ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### VS Code ###
+.vscode/
+
+### Build output ###
+build/
+dist/
+
+### Node / React ###
+node_modules/
+build/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### Misc ###
+HELP.md
