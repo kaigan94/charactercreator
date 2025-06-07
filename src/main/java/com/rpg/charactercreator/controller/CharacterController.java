@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 🎮 Här styr vi alla API-anrop som har med RPG-karaktärer att göra.
@@ -77,19 +78,18 @@ public class CharacterController {
     }
 
     /**
-     * 🔍 Hämta karaktär via ID.
+     * 🔍 Hämta alla karaktärer för en viss användare.
      *
-     * @param id Karaktärens ID
-     * @return Karaktär som DTO eller 404 om ej hittad
+     * @param userId Användarens ID
+     * @return Lista med karaktärer som DTO
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<CharacterWithDetailsDTO> getCharacterById(@PathVariable Long id) {
-        return characterService.getAllCharacters().stream()
-                .filter(c -> c.getId().equals(id))
-                .findFirst()
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<CharacterWithDetailsDTO>> getCharactersByUserId(@PathVariable Long userId) {
+        List<Character> characters = characterService.getCharactersByUserId(userId);
+        List<CharacterWithDetailsDTO> dtos = characters.stream()
                 .map(characterService::toDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     /**
