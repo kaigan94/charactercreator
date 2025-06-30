@@ -6,7 +6,7 @@ Great practice for building REST APIs, working with relational databases, and de
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Tech
 
 ### Backend
 - Java 21
