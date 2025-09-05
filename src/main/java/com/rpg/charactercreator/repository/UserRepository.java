@@ -17,30 +17,31 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * 🔍 Hitta användare baserat på e-postadress (case-insensitive).
-     *
-     * @param email e-postadress att söka efter
-     * @return Optional med användare om den finns
      */
     Optional<User> findByEmail(String email);
 
     /**
+     * 🔍 Hitta användare baserat på användarnamn (case-sensitive enligt DB-collation).
+     */
+    Optional<User> findByUsername(String username);
+
+    /**
+     * ✅ Kontrollera om ett användarnamn redan finns (för registrering).
+     */
+    boolean existsByUsername(String username);
+
+    /**
      * ✅ Kontrollera om en användare med en viss e-postadress redan finns.
-     *
-     * @param email e-postadress att kontrollera
-     * @return true om e-postadressen finns, annars false
      */
     boolean existsByEmail(String email);
 
     /**
      * 🧮 Hämta användare som har fler än ett visst antal karaktärer.
      * Använder native SQL och subquery för att räkna karaktärer per användare.
-     *
-     * @param count Antal karaktärer som tröskel
-     * @return Lista över användare med fler än {count} karaktärer
      */
     @Query(
             value = """
-            SELECT * FROM user
+            SELECT * FROM users
             WHERE user_id IN (
                 SELECT user_id
                 FROM characters

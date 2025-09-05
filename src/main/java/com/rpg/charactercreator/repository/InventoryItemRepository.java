@@ -13,9 +13,6 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
 
     /**
      * 🔍 Hämta alla inventory-items som tillhör en specifik karaktär.
-     *
-     * @param characterId ID för karaktären
-     * @return Lista med inventory-items för den angivna karaktären
      */
     List<InventoryItem> findByCharacterId(Long characterId);
 }

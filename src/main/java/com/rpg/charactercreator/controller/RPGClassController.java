@@ -32,8 +32,7 @@ public class RPGClassController {
 
     /**
      * 📄 GET /classes
-     * Hämtar alla RPG-klasser i systemet.
-     * @return Lista med alla RPG-klasser
+     * Hämtar alla RPG-klasser i systemet
      */
     @GetMapping
     public ResponseEntity<List<RPGClass>> getAllClasses() {
@@ -43,9 +42,7 @@ public class RPGClassController {
 
     /**
      * 🔍 GET /classes/name/{name}
-     * Hämta en klass baserat på dess namn.
-     * @param name Namnet på klassen som ska hämtas
-     * @return Klass med dess egenskaper och skills, eller 404 om inte hittad
+     * Hämta en klass baserat på dess namn
      */
     @GetMapping("/name/{name}")
     public ResponseEntity<ClassWithSkillsDTO> getClassByName(@PathVariable String name) {
@@ -58,9 +55,7 @@ public class RPGClassController {
 
     /**
      * ➕ POST /classes
-     * Skapa en ny RPG-klass med namn och beskrivning.
-     * @param rpgClass Objekt som innehåller klassens data
-     * @return Den skapade RPG-klassen
+     * Skapa en ny RPG-klass med namn och beskrivning
      */
     @PostMapping
     public ResponseEntity<RPGClass> createClass(@RequestBody RPGClass rpgClass) {
@@ -71,10 +66,7 @@ public class RPGClassController {
     /**
      * ✏️ PUT /classes/{id}
      * Uppdatera en befintlig klass med ny data.
-     * Endast icke-null värden uppdateras.
-     * @param id ID för klassen som ska uppdateras
-     * @param updatedClass Objekt med ny data för klassen
-     * @return Den uppdaterade RPG-klassen eller 404 om inte hittad
+     * Endast icke-null värden uppdateras
      */
     @PutMapping("/{id}")
     public ResponseEntity<RPGClass> updateClass(@PathVariable Long id, @RequestBody RPGClass updatedClass) {
@@ -112,8 +104,6 @@ public class RPGClassController {
      * ✏️ PUT /classes
      * Uppdatera flera RPG-klasser samtidigt.
      * Null-värden skrivs inte över.
-     * @param updatedClasses Lista med klasser som ska uppdateras
-     * @return Lista med uppdaterade RPG-klasser
      */
     @PutMapping
     public ResponseEntity<List<RPGClass>> updateClasses(@RequestBody List<RPGClass> updatedClasses) {
@@ -156,8 +146,6 @@ public class RPGClassController {
     /**
      * ❌ DELETE /classes/{id}
      * Ta bort en RPG-klass baserat på ID.
-     * @param id ID för klassen som ska tas bort
-     * @return 204 No Content om borttagen, annars 404 Not Found
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteClass(@PathVariable Long id) {
@@ -175,8 +163,6 @@ public class RPGClassController {
     /**
      * 🎒 GET /classes/name/{name}/starting-items
      * Hämta startföremål som hör till en viss klass.
-     * @param name Namnet på klassen
-     * @return Lista med startföremål för klassen
      */
     @GetMapping("/name/{name}/starting-items")
     public ResponseEntity<List<StartingItemDTO>> getStartingItemsByClassName(@PathVariable String name) {

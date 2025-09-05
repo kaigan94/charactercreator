@@ -10,10 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * 🎯 SkillService
- * Service-klass som hanterar logiken för att hämta, spara, radera och koppla färdigheter (skills) till karaktärer.
- */
 @Service
 public class SkillService {
 
@@ -25,32 +21,20 @@ public class SkillService {
         this.characterRepository = characterRepository;
     }
 
-    /**
-     * 🔍 Hämta alla skills från databasen.
-     */
     public List<Skill> findAll() {
         return skillRepository.findAll();
     }
 
-    /**
-     * 💾 Spara en ny skill eller uppdatera en befintlig.
-     */
     public Skill save(Skill skill) {
         return skillRepository.save(skill);
     }
 
-    /**
-     * ❌ Radera en skill baserat på dess ID.
-     */
     public void deleteById(Long id) {
         skillRepository.deleteById(id);
     }
 
     /**
-     * ➕ Lägg till en befintlig skill till en specifik karaktär.
-     *
-     * @param characterId ID på karaktären som ska få en ny skill
-     * @param skillId     ID på skillen som ska kopplas till karaktären
+     * Lägg till en befintlig skill till en specifik karaktär.
      */
     public void addSkillToCharacter(Long characterId, Long skillId) {
         Character character = characterRepository.findById(characterId)

@@ -17,7 +17,6 @@ public class SkillController {
 
     private final SkillService skillService;
 
-    // Konstruktor för att injicera vår service
     public SkillController(SkillService skillService) {
         this.skillService = skillService;
     }
@@ -25,8 +24,6 @@ public class SkillController {
     /**
      * 📄 GET /skills
      * Hämtar alla färdigheter som finns i systemet.
-     *
-     * @return Lista med alla skills
      */
     @GetMapping
     public ResponseEntity<List<Skill>> getAllSkills() {
@@ -35,10 +32,7 @@ public class SkillController {
 
     /**
      * ➕ POST /skills
-     * Skapar en ny färdighet.
-     *
-     * @param skill Skill-objekt att spara
-     * @return Den sparade skillen med status 201 Created
+     * Skapar en ny skill.
      */
     @PostMapping
     public ResponseEntity<Skill> createSkill(@RequestBody Skill skill) {
@@ -49,9 +43,6 @@ public class SkillController {
     /**
      * ❌ DELETE /skills/{id}
      * Tar bort en färdighet baserat på ID.
-     *
-     * @param id ID för skill som ska tas bort
-     * @return 204 No Content
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSkill(@PathVariable Long id) {
@@ -62,10 +53,6 @@ public class SkillController {
     /**
      * 🔗 POST /skills/{characterId}/add/{skillId}
      * Lägger till en befintlig skill till en karaktär.
-     *
-     * @param characterId ID för karaktären
-     * @param skillId ID för skillen
-     * @return 200 OK
      */
     @PostMapping("/{characterId}/add/{skillId}")
     public ResponseEntity<Void> addSkillToCharacter(

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.security.core.Authentication;
 
 /**
  * 🎮 Här styr vi alla API-anrop som har med RPG-karaktärer att göra.
@@ -24,38 +25,35 @@ public class CharacterController {
 
     private final CharacterService characterService;
 
-    public CharacterController(CharacterService characterService) {
+    public CharacterController(CharacterService characterService,
+                               com.rpg.charactercreator.service.UserService userService) {
         this.characterService = characterService;
     }
 
-    /**
-     * ➕ Skapa en ny karaktär.
-     *
-     * @param dto Data från frontend
-     * @return Skapad karaktär som DTO
-     */
     @PostMapping
-    public ResponseEntity<CharacterWithDetailsDTO> createCharacter(@RequestBody CharacterCreateDTO dto) {
-        List<Long> skillIds = dto.getSkillIds() != null ? dto.getSkillIds() : List.of();
+    public ResponseEntity<CharacterWithDetailsDTO> createCharacter(
+            @RequestBody CharacterCreateDTO dto,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
-        Character newChar = characterService.createCharacter(
+        String currentUsername = authentication.getName();
+
+        Character newChar = characterService.createCharacterForUsername(
                 dto,
-                dto.getUserId(),
+                currentUsername,          // <- ÄGARE FRÅN SESSION
                 dto.getClassName(),
-                skillIds,
+                dto.getSkillIds() != null ? dto.getSkillIds() : List.of(),
                 dto.getStartingItems()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(characterService.toDTO(newChar));
+        return ResponseEntity.status(HttpStatus.CREATED).body(characterService.toDTO(newChar));
     }
 
     /**
      * 📄 Hämta alla karaktärer (med pagination).
-     *
-     * @param pageable Sida och storlek
-     * @return Sida med karaktärer
      */
     @GetMapping
     public ResponseEntity<Page<CharacterWithDetailsDTO>> getAllCharacters(Pageable pageable) {
@@ -66,9 +64,6 @@ public class CharacterController {
 
     /**
      * 🔍 Sök karaktärer med namn (case-insensitive).
-     *
-     * @param name Namn att söka efter
-     * @return Lista med matchande karaktärer
      */
     @GetMapping("/search")
     public ResponseEntity<List<CharacterWithDetailsDTO>> searchCharacters(@RequestParam String name) {
@@ -79,9 +74,6 @@ public class CharacterController {
 
     /**
      * 🔍 Hämta alla karaktärer för en viss användare.
-     *
-     * @param userId Användarens ID
-     * @return Lista med karaktärer som DTO
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<CharacterWithDetailsDTO>> getCharactersByUserId(@PathVariable Long userId) {
@@ -94,17 +86,33 @@ public class CharacterController {
 
     /**
      * ❌ Radera karaktär via ID.
-     *
-     * @param id Karaktärens ID
-     * @return 204 No Content eller 404 Not Found
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCharacter(@PathVariable Long id) {
-        boolean exists = characterService.getAllCharacters().stream()
-                .anyMatch(c -> c.getId().equals(id));
+    public ResponseEntity<Void> deleteCharacter(@PathVariable Long id, Authentication authentication) {
+        // hitta karaktär med id
+        var optChar = characterService.getAllCharacters().stream()
+                .filter(c -> c.getId().equals(id))
+                .findFirst();
 
-        if (!exists) {
+        if (optChar.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+
+        var character = optChar.get();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+
+        if (!isAdmin) {
+            String currentUsername = authentication.getName();
+            var owner = character.getUser(); // assumes Character has getUser()
+            if (owner == null || owner.getUsername() == null || !owner.getUsername().equals(currentUsername)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
         }
 
         characterService.deleteById(id);
@@ -113,10 +121,6 @@ public class CharacterController {
 
     /**
      * ✏️ Uppdatera karaktärsdata.
-     *
-     * @param id Karaktärens ID
-     * @param updateDTO Fält som ska uppdateras
-     * @return Uppdaterad karaktär som DTO
      */
     @PutMapping("/{id}")
     public ResponseEntity<CharacterWithDetailsDTO> updateCharacter(

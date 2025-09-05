@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.Arrays;
 
 @Service
 public class CharacterService {
@@ -47,6 +46,20 @@ public class CharacterService {
         this.classRepository = classRepository;
         this.skillRepository = skillRepository;
         this.inventoryItemRepository = inventoryItemRepository;
+    }
+
+    @Transactional
+    public Character createCharacterForUsername(
+            CharacterCreateDTO dto,
+            String username,
+            String className,
+            List<Long> skillIds,
+            List<InventoryItemDTO> startingItems) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("No user with username: " + username));
+
+        return createCharacter(dto, user.getUserId(), className, skillIds, startingItems);
     }
 
     @Transactional
@@ -155,6 +168,12 @@ public class CharacterService {
         return characterRepository.findAll(pageable).map(this::toDTO);
     }
 
+    @Transactional(readOnly = true)
+    public boolean isOwner(Long characterId, String username) {
+        Character c = characterRepository.findById(characterId)
+                .orElseThrow(() -> new CharacterNotFoundException(characterId));
+        return c.getUser() != null && username != null && username.equals(c.getUser().getUsername());
+    }
 
     @Transactional
     public Character updateCharacter(Long id, CharacterUpdateDTO updateDTO) {
@@ -183,10 +202,12 @@ public class CharacterService {
     }
 
 
-    /**
-     * Deletes a character by its id.
-     * @param id the id of the character to delete
-     */
+    @Transactional(readOnly = true)
+    public Character getById(Long id) {
+        return characterRepository.findById(id)
+                .orElseThrow(() -> new CharacterNotFoundException(id));
+    }
+
     public void deleteById(Long id) {
         characterRepository.deleteById(id);
     }
@@ -261,12 +282,6 @@ public class CharacterService {
         }
     }
 
-
-    /**
-     * Returns a list of characters belonging to a specific user.
-     * @param userId the user id
-     * @return list of characters
-     */
     public List<Character> getCharactersByUserId(Long userId) {
         return characterRepository.findAll()
                 .stream()
