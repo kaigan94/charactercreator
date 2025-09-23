@@ -21,13 +21,16 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+        // CSRF-token lagras i cookie (tillgänglig för frontend/axios)
         CookieCsrfTokenRepository csrfRepo = CookieCsrfTokenRepository.withHttpOnlyFalse();
-        csrfRepo.setHeaderName("X-XSRF-TOKEN"); // matchar axios
+        csrfRepo.setHeaderName("X-XSRF-TOKEN"); // samma header som frontend skickar
 
+        // Hanterar CSRF-token i request
         CsrfTokenRequestAttributeHandler reqHandler = new CsrfTokenRequestAttributeHandler();
         reqHandler.setCsrfRequestAttributeName("_csrf");
 
         http
+                // ⬇️ Vilka endpoints som är öppna och vilka som kräver inloggning
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/csrf-token", "/auth/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/login", "/logout").permitAll()
@@ -35,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/characters/**").authenticated()
                         .anyRequest().permitAll()
                 )
+                // ⬇️ Inloggningsinställningar (Spring Security formLogin)
                 .formLogin(form -> form
                         .loginProcessingUrl("/login")
                         .usernameParameter("username")
@@ -42,21 +46,26 @@ public class SecurityConfig {
                         .successHandler((req, res, auth) -> res.setStatus(200))
                         .failureHandler((req, res, ex) -> res.setStatus(401))
                 )
+                // ⬇️ Utloggning
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessHandler((req, res, auth) -> res.setStatus(200))
                 )
+                // ⬇️ CSRF-skydd aktiverat, men vissa endpoints undantas
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfRepo)
                         .csrfTokenRequestHandler(reqHandler)
                         .ignoringRequestMatchers("/auth/**", "/login", "/logout")
                 )
+                // ⬇️ Lägger till filter som skickar CSRF-token som cookie
                 .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
+                // ⬇️ Tillåter CORS (från AppConfig)
                 .cors(Customizer.withDefaults());
 
         return http.build();
     }
 
+    // Lösenord krypteras med BCrypt
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

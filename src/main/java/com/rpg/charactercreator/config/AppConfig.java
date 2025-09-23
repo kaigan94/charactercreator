@@ -13,14 +13,14 @@ public class AppConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setMaxAge(3600L);
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-XSRF-TOKEN"));
-        config.setAllowCredentials(true);
+        config.setMaxAge(3600L); // cache preflight
+        config.setAllowedOrigins(List.of("http://localhost:5173")); // tillåt frontend
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // tillåt metoder
+        config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-XSRF-TOKEN")); // tillåt headers
+        config.setAllowCredentials(true); // tillåt cookies
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", config); // gäller alla endpoints
         return source;
     }
 }

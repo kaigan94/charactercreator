@@ -24,7 +24,7 @@ public class CharacterWithDetailsDTO {
     private String background;   // Bakgrundshistoria eller lore
     private int level;           // Karaktärens level (startar på 1)
 
-    // 💪 Karaktärens bas-statistik
+    // 💪 Karaktärens bas-stats
     private int strength;        // Fysisk styrka
     private int dexterity;       // Smidighet och snabbhet
     private int intelligence;    // Intellekt och magikunskaper

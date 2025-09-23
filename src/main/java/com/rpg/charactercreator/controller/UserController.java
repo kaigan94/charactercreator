@@ -13,9 +13,9 @@ import com.rpg.charactercreator.service.CharacterService;
 import com.rpg.charactercreator.service.UserService;
 
 /**
- * 🎮 User Controller - Manage users easily!
- * Handles all user-related operations like creating, updating, and fetching users.
- * Base URL: /users
+ * 🎮 UserController
+ * Hanterar allt som rör användare (skapa, hämta, uppdatera, ta bort).
+ * Bas-URL: /users
  */
 @RestController
 @RequestMapping("/users")
@@ -24,16 +24,15 @@ public class UserController {
     private final UserService userService;
     private final CharacterService characterService;
 
-    // Constructor for dependency injection
+    // Konstruktor-injektion av services
     public UserController(UserService userService, CharacterService characterService) {
         this.userService = userService;
         this.characterService = characterService;
     }
 
     /**
-     * ➕ Create a new user
-     * Accepts user details and returns the created user without the password.
-     * POST /users
+     * ➕ POST /users
+     * Skapar en ny användare (lösenord exkluderas i DTO).
      */
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody User user) {
@@ -42,9 +41,8 @@ public class UserController {
     }
 
     /**
-     * 📋 Get all users
-     * Returns a list of all users in the system.
-     * GET /users
+     * 📋 GET /users
+     * Hämtar alla användare som DTO-lista.
      */
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
@@ -56,9 +54,8 @@ public class UserController {
     }
 
     /**
-     * ✏️ Update user info
-     * Update username and email for a user by their ID.
-     * PUT /users/{id}
+     * ✏️ PUT /users/{id}
+     * Uppdaterar username och email för en användare.
      */
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
@@ -73,9 +70,8 @@ public class UserController {
     }
 
     /**
-     * 🗑️ Delete a user
-     * Remove a user from the system by their ID.
-     * DELETE /users/{id}
+     * 🗑️ DELETE /users/{id}
+     * Tar bort en användare med angivet ID.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
@@ -84,9 +80,8 @@ public class UserController {
     }
 
     /**
-     * 🔍 Find user by email
-     * Retrieve user details using their email address.
-     * GET /users/email/{email}
+     * 🔍 GET /users/email/{email}
+     * Hämtar användare baserat på email.
      */
     @GetMapping("/email/{email}")
     public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
@@ -97,9 +92,8 @@ public class UserController {
     }
 
     /**
-     * 🎭 Get characters for a user
-     * Fetch all characters linked to a specific user ID.
-     * GET /users/{userId}/characters
+     * 🎭 GET /users/{userId}/characters
+     * Hämtar alla karaktärer kopplade till en viss användare.
      */
     @GetMapping("/{userId}/characters")
     public ResponseEntity<List<CharacterWithDetailsDTO>> getCharactersByUserId(@PathVariable Long userId) {

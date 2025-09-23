@@ -7,8 +7,7 @@ import lombok.Setter;
 import java.util.List;
 
 /**
- * 🧙 ClassWithSkillsDTO
- * Innehåller klassnamn, beskrivning, start-stats, roll, rustningstyp, vapen och kopplade skills.
+ * DTO-klass som representerar en RPG-klass med dess egenskaper och kopplade skills.
  */
 @Getter
 @Setter
@@ -17,21 +16,20 @@ public class ClassWithSkillsDTO {
 
     // 📘 Klassinformation
     private String name;         // Namn på RPG-klassen
-    private String description;  // Beskrivning
+    private String description;  // Beskrivning av klassen
 
     // 💪 Stats
-    private int strength;
-    private int dexterity;
-    private int intelligence;
-    private int constitution;
-    private int wisdom;
-    private int charisma;
+    private int strength;        // Styrka, fysisk kraft
+    private int dexterity;       // Smidighet och snabbhet
+    private int intelligence;    // Intelligens och magiska förmågor
+    private int constitution;    // Uthållighet och hälsa
+    private int wisdom;          // Visdom och insikt
+    private int charisma;        // Karisma och social förmåga
 
-    // 🛡️ Extra klassinfo
-    private String role;             // T.ex. "Tank", "Healer"
-    private String armorType;        // T.ex. "Plate", "Cloth"
-    private List<String> weapons;    // T.ex. ["Sword", "Shield"]
+    private String role;             // Roll i gruppen, t.ex. "Tank", "Healer"
+    private String armorType;        // Typ av rustning, t.ex. "Plate", "Cloth"
+    private List<String> weapons;    // Lista över tillgängliga vapen
 
-    // 🎯 Kopplade skills
-    private List<SkillDTO> skills;
+    // kopplade skills
+    private List<SkillDTO> skills;   // Lista över kopplade färdigheter (skills)
 }

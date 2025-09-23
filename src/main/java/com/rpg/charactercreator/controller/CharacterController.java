@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
 
 /**
- * 🎮 Här styr vi alla API-anrop som har med RPG-karaktärer att göra.
+ * 🎮 Controller för RPG-karaktärer.
+ * Hanterar API-anrop relaterade till karaktärer.
  * Bas-URL: /characters
  */
 @RestController
@@ -30,6 +31,9 @@ public class CharacterController {
         this.characterService = characterService;
     }
 
+    /**
+     * Skapar en ny karaktär kopplad till inloggad användare.
+     */
     @PostMapping
     public ResponseEntity<CharacterWithDetailsDTO> createCharacter(
             @RequestBody CharacterCreateDTO dto,
@@ -43,7 +47,7 @@ public class CharacterController {
 
         Character newChar = characterService.createCharacterForUsername(
                 dto,
-                currentUsername,          // <- ÄGARE FRÅN SESSION
+                currentUsername,
                 dto.getClassName(),
                 dto.getSkillIds() != null ? dto.getSkillIds() : List.of(),
                 dto.getStartingItems()
@@ -53,7 +57,7 @@ public class CharacterController {
     }
 
     /**
-     * 📄 Hämta alla karaktärer (med pagination).
+     * 📄 Hämtar alla karaktärer med pagination.
      */
     @GetMapping
     public ResponseEntity<Page<CharacterWithDetailsDTO>> getAllCharacters(Pageable pageable) {
@@ -63,7 +67,7 @@ public class CharacterController {
     }
 
     /**
-     * 🔍 Sök karaktärer med namn (case-insensitive).
+     * 🔍 Söker karaktärer på namn (case-insensitive).
      */
     @GetMapping("/search")
     public ResponseEntity<List<CharacterWithDetailsDTO>> searchCharacters(@RequestParam String name) {
@@ -73,7 +77,7 @@ public class CharacterController {
     }
 
     /**
-     * 🔍 Hämta alla karaktärer för en viss användare.
+     * 🔍 Hämtar alla karaktärer för en specifik användare.
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<CharacterWithDetailsDTO>> getCharactersByUserId(@PathVariable Long userId) {
@@ -85,21 +89,11 @@ public class CharacterController {
     }
 
     /**
-     * ❌ Radera karaktär via ID.
+     * ❌ Tar bort en karaktär via dess ID.
+     * Endast ägare eller admin kan ta bort.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCharacter(@PathVariable Long id, Authentication authentication) {
-        // hitta karaktär med id
-        var optChar = characterService.getAllCharacters().stream()
-                .filter(c -> c.getId().equals(id))
-                .findFirst();
-
-        if (optChar.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        var character = optChar.get();
-
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -107,9 +101,11 @@ public class CharacterController {
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
 
+        Character character = characterService.getById(id); // kastar 404 om ej finns
+
         if (!isAdmin) {
             String currentUsername = authentication.getName();
-            var owner = character.getUser(); // assumes Character has getUser()
+            var owner = character.getUser();
             if (owner == null || owner.getUsername() == null || !owner.getUsername().equals(currentUsername)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
@@ -120,7 +116,7 @@ public class CharacterController {
     }
 
     /**
-     * ✏️ Uppdatera karaktärsdata.
+     * ✏️ Uppdaterar data för en befintlig karaktär.
      */
     @PutMapping("/{id}")
     public ResponseEntity<CharacterWithDetailsDTO> updateCharacter(

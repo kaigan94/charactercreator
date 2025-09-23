@@ -13,31 +13,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * 🔮 Entity för RPG-karaktär.
- */
 @Entity
-@Table(name = "characters")
-@Getter
-@Setter
-@NoArgsConstructor
-@Builder
-@AllArgsConstructor
+@Table(name = "characters") // Kopplas till tabellen "characters" i databasen
+@Getter @Setter @NoArgsConstructor @Builder @AllArgsConstructor
 public class Character {
 
-    // === 🧾 Grundläggande info ===
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-ID från databasen
     private Long id;
 
-    @NotBlank
+    @NotBlank // Namn får inte vara tomt
     private String name;
 
-    private String background;
+    private String background; // Kort bakgrundsbeskrivning
+    private int level = 1;     // Alla startar på level 1
 
-    private int level = 1;
-
-    // === ⚔️ Stats ===
+    // === ⚔️ Stats för spelet ===
     private int charisma;
     private int constitution;
     private int dexterity;
@@ -45,12 +36,12 @@ public class Character {
     private int strength;
     private int wisdom;
 
-    // === 🔗 Relationer ===
-    @ManyToOne(fetch = FetchType.LAZY)
+    // === 🔗 Relationer till andra entiteter ===
+    @ManyToOne(fetch = FetchType.LAZY) // En klass kan ha många karaktärer
     @JoinColumn(name = "class_id")
     private RPGClass rpgClass;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY) // En karaktär kan ha många skills
     @JoinTable(
             name = "character_skills",
             joinColumns = @JoinColumn(name = "character_id"),
@@ -58,22 +49,20 @@ public class Character {
     )
     private List<Skill> skills = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // En användare kan äga flera karaktärer
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private User user;
 
-    // === 🎒 Inventory med relation ===
+    // 🎒 Koppling till inventory-items (ett-till-många)
     @OneToMany(mappedBy = "character", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InventoryItem> inventoryItems = new ArrayList<>();
 
-
+    // Jämförelse av karaktärer baserat på ID
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         Character character = (Character) o;
-
         return Objects.equals(id, character.id);
     }
 
@@ -82,6 +71,7 @@ public class Character {
         return id != null ? id.hashCode() : 0;
     }
 
+    // toString() för enkel utskrift/debugging
     @Override
     public String toString() {
         return "Character{" +

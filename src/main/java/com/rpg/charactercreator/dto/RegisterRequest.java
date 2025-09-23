@@ -6,27 +6,20 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * 📥 RegisterRequest
- * DTO som innehåller användarens registreringsdata:
- * användarnamn, email och lösenord.
+ * DTO för registrering av användare.
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterRequest {
-    /**
-     * Användarnamn som användaren vill registrera sig med.
-     */
+
+    // Användarnamn för den nya användaren
     private String username;
 
-    /**
-     * E-postadress för att skapa kontot.
-     */
+    // E-postadress för den nya användaren
     private String email;
 
-    /**
-     * Lösenord som ska användas för kontot.
-     */
+    // Lösenord för den nya användaren
     private String password;
 }

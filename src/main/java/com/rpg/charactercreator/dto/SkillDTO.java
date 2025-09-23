@@ -14,12 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SkillDTO {
 
-    /** Unikt ID för färdigheten */
     private Long id;
-
-    /** Namn på färdigheten */
     private String name;
-
-    /** Beskrivning av vad färdigheten gör */
     private String description;
 }

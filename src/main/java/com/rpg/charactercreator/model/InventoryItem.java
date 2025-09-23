@@ -5,35 +5,26 @@ import lombok.Setter;
 
 import jakarta.persistence.*;
 
-/**
- * 📦 InventoryItem
- * Representerar ett föremål i en karaktärs inventory.
- * Varje item har ett namn, en beskrivning och tillhör en specifik karaktär.
- */
 @Getter
 @Setter
-@Entity
+@Entity // Markeras som en databas-entitet
 public class InventoryItem {
 
-    /** Unikt ID för inventory-föremålet. Genereras automatiskt. */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-ID i databasen
     private Long id;
 
-    /** Namn på föremålet (t.ex. "Iron Sword"). */
-    private String name;
+    private String name;        // Namn på föremålet
+    private String description; // Kort beskrivning av föremålet
 
-    /** Beskrivning av föremålet (t.ex. "A basic melee weapon"). */
-    private String description;
-
-    /** Den karaktär som äger detta föremål. */
-    @ManyToOne
-    @JoinColumn(name = "character_id", nullable = false)
+    @ManyToOne // Många items kan tillhöra en karaktär
+    @JoinColumn(name = "character_id", nullable = false) // Koppling till Character-tabellen
     private Character character;
 
-    // Constructors
+    // Standardkonstruktor (krävs av JPA)
     public InventoryItem() {}
 
+    // Konstruktor för att snabbt skapa nya items
     public InventoryItem(String name, String description, Character character) {
         this.name = name;
         this.description = description;

@@ -25,6 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Affärslogik för karaktärer (skapa, uppdatera, radera, hämta).
+ */
 @Service
 public class CharacterService {
 
@@ -33,7 +36,6 @@ public class CharacterService {
     private final RPGClassRepository classRepository;
     private final SkillRepository skillRepository;
     private final InventoryItemRepository inventoryItemRepository;
-
 
     public CharacterService(
             CharacterRepository characterRepository,
@@ -48,6 +50,9 @@ public class CharacterService {
         this.inventoryItemRepository = inventoryItemRepository;
     }
 
+    /**
+     * Skapar karaktär åt inloggad användare (via username).
+     */
     @Transactional
     public Character createCharacterForUsername(
             CharacterCreateDTO dto,
@@ -62,6 +67,9 @@ public class CharacterService {
         return createCharacter(dto, user.getUserId(), className, skillIds, startingItems);
     }
 
+    /**
+     * Skapar en ny karaktär: sätter klass, ägare, bas-stats, skills och start-items.
+     */
     @Transactional
     public Character createCharacter(
             CharacterCreateDTO dto,
@@ -70,12 +78,13 @@ public class CharacterService {
             List<Long> skillIds,
             List<InventoryItemDTO> startingItems) {
 
+        // Hämta ägare och klass eller kasta 404/400
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
-
         RPGClass rpgClass = classRepository.findByName(className)
                 .orElseThrow(() -> new ClassNotFoundException(className));
 
+        // Bygg entitet med defaults från klassen
         Character character = new Character();
         character.setName(dto.getName());
         character.setLevel(1);
@@ -89,40 +98,55 @@ public class CharacterService {
         character.setWisdom(rpgClass.getWisdom());
         character.setCharisma(rpgClass.getCharisma());
 
+        // Validera och sätt 3 valda skills
         validateSelectedSkills(className, skillIds);
-
         List<Skill> selectedSkills = skillRepository.findAllById(skillIds);
         character.setSkills(selectedSkills);
 
+        // Spara karaktären först (behövs för foreign keys)
         Character savedCharacter = characterRepository.save(character);
 
+        // Spara startföremål (max 3)
         if (startingItems != null && startingItems.size() > 3) {
             throw new IllegalArgumentException("You can only select up to 3 starting items.");
         }
         if (startingItems != null) {
             List<InventoryItem> selectedItems = startingItems.stream()
-                .filter(item -> item.getName() != null && item.getDescription() != null)
-                .map(item -> new InventoryItem(item.getName(), item.getDescription(), savedCharacter))
-                .collect(Collectors.toList());
+                    .filter(item -> item.getName() != null && item.getDescription() != null)
+                    .map(item -> new InventoryItem(item.getName(), item.getDescription(), savedCharacter))
+                    .collect(Collectors.toList());
             inventoryItemRepository.saveAll(selectedItems);
         }
 
+        // Lägg till klassens starting weapon i inventory om den finns
+        String startingWeapon = rpgClass.getStartingWeapon();
+        if (startingWeapon != null && !startingWeapon.isBlank()) {
+            inventoryItemRepository.save(new InventoryItem(startingWeapon, "Class starting weapon.", savedCharacter));
+        }
+
+        // Lägg på standardutrustning (t.ex. rustning) baserat på armor-type/roll
         assignDefaultEquipment(savedCharacter, rpgClass.getRole());
 
         return savedCharacter;
     }
 
-
+    /**
+     * Hämta alla karaktärer (utan pagination).
+     */
     public List<Character> getAllCharacters() {
         return characterRepository.findAll();
     }
 
-
+    /**
+     * Sök karaktärer på namn (case-insensitive).
+     */
     public List<Character> searchByName(String name) {
         return characterRepository.findByNameContainingIgnoreCase(name);
     }
 
-
+    /**
+     * Hämta alla karaktärer + mappa till DTO.
+     */
     public List<CharacterWithDetailsDTO> getAllCharactersWithDetails() {
         return characterRepository.findAll()
                 .stream()
@@ -130,7 +154,9 @@ public class CharacterService {
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * Mapper: Character -> CharacterWithDetailsDTO (gömmer känsligt & plattar relationer).
+     */
     public CharacterWithDetailsDTO toDTO(Character character) {
         CharacterWithDetailsDTO dto = new CharacterWithDetailsDTO();
         dto.setId(character.getId());
@@ -155,7 +181,9 @@ public class CharacterService {
         return dto;
     }
 
-
+    /**
+     * Sök + returnera som DTO-lista.
+     */
     public List<CharacterWithDetailsDTO> searchByNameWithDetails(String name) {
         return characterRepository.findByNameContainingIgnoreCase(name)
                 .stream()
@@ -163,11 +191,16 @@ public class CharacterService {
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * Hämta alla karaktärer med pagination som DTO.
+     */
     public Page<CharacterWithDetailsDTO> getAllCharactersWithDetails(Pageable pageable) {
         return characterRepository.findAll(pageable).map(this::toDTO);
     }
 
+    /**
+     * Ägarkoll: stämmer username med karaktärens ägare?
+     */
     @Transactional(readOnly = true)
     public boolean isOwner(Long characterId, String username) {
         Character c = characterRepository.findById(characterId)
@@ -175,6 +208,9 @@ public class CharacterService {
         return c.getUser() != null && username != null && username.equals(c.getUser().getUsername());
     }
 
+    /**
+     * Partiell uppdatering av stats/namn/klass/skills.
+     */
     @Transactional
     public Character updateCharacter(Long id, CharacterUpdateDTO updateDTO) {
         Character character = characterRepository.findById(id)
@@ -201,18 +237,25 @@ public class CharacterService {
         return characterRepository.save(character);
     }
 
-
+    /**
+     * Hämta karaktär eller kasta 404.
+     */
     @Transactional(readOnly = true)
     public Character getById(Long id) {
         return characterRepository.findById(id)
                 .orElseThrow(() -> new CharacterNotFoundException(id));
     }
 
+    /**
+     * Ta bort karaktär (används av controller efter ägarkoll/rollkoll).
+     */
     public void deleteById(Long id) {
         characterRepository.deleteById(id);
     }
 
-
+    /**
+     * Validerar att exakt 3 skills valts och att de hör till klassen.
+     */
     private void validateSelectedSkills(String className, List<Long> skillIds) {
         if (skillIds == null || skillIds.size() != 3)
             throw new IllegalArgumentException("You must select 3 starting skills.");
@@ -232,7 +275,9 @@ public class CharacterService {
         }
     }
 
-
+    /**
+     * Lägg till ett inventory-item till en karaktär.
+     */
     @Transactional
     public void addInventoryItem(Long characterId, InventoryItemDTO dto) {
         Character character = characterRepository.findById(characterId)
@@ -242,7 +287,9 @@ public class CharacterService {
         inventoryItemRepository.save(item);
     }
 
-
+    /**
+     * Hämta en karaktärs inventory som DTO-lista (namn + beskrivning).
+     */
     @Transactional(readOnly = true)
     public List<InventoryItemDTO> getInventoryForCharacter(Long characterId) {
         List<InventoryItem> items = inventoryItemRepository.findByCharacterId(characterId);
@@ -252,41 +299,32 @@ public class CharacterService {
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * Standardutrustning baserat på roll och armor-type.
+     */
     private void assignDefaultEquipment(Character character, String role) {
         if (role == null) return;
-
-        role = role.toLowerCase();
-        if (role.contains("melee damage")) {
-            inventoryItemRepository.save(new InventoryItem("Iron Sword", "A reliable blade for melee combat.", character));
-        }
-        if (role.contains("ranged damage")) {
-            inventoryItemRepository.save(new InventoryItem("Hunting Bow", "A basic but sturdy bow for ranged attacks.", character));
-        }
-        if (role.contains("healer")) {
-            inventoryItemRepository.save(new InventoryItem("Healer's Staff", "Focuses healing magic.", character));
-        }
-        if (role.contains("tank")) {
-            inventoryItemRepository.save(new InventoryItem("Wooden Shield", "Provides basic protection.", character));
-        }
 
         RPGClass rpgClass = character.getRpgClass();
         if (rpgClass != null && rpgClass.getArmorType() != null) {
             String armor = switch (rpgClass.getArmorType().toLowerCase()) {
-                case "cloth" -> "Cloth Robe";
-                case "leather" -> "Leather Vest";
-                case "plate" -> "Iron Plate Armor";
+                case "cloth" -> "Traveler's Cloth Robe";
+                case "leather" -> "Traveler's Leather Vest";
+                case "plate" -> "Traveler's Armor";
                 default -> "Traveler's Clothes";
             };
             inventoryItemRepository.save(new InventoryItem(armor, "Basic armor for your class.", character));
         }
     }
+    
 
+    /**
+     * Hämta alla karaktärer för en given userId.
+     */
     public List<Character> getCharactersByUserId(Long userId) {
         return characterRepository.findAll()
                 .stream()
                 .filter(c -> c.getUser() != null && c.getUser().getUserId().equals(userId))
                 .collect(Collectors.toList());
     }
-
 }

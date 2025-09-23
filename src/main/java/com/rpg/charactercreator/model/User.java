@@ -10,18 +10,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.HashSet;
 
-/**
- * User
- * Representerar en användare i systemet. En user kan skapa karaktärer.
- */
-@Entity //  Markerar denna klass som en JPA-entity (kopplas till en databas-tabell)
+@Entity
 @Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
 public class User {
 
-    /** Primary key – auto generated ID för varje användare */
+    /** pk – auto generated id för varje user */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -58,8 +54,7 @@ public class User {
     }
 
     /**
-     * 🔁 equals
-     * Används för att jämföra två User-objekt baserat på deras ID.
+     * jämför två User-objekt baserat på deras id
      */
     @Override
     public boolean equals(Object o) {
@@ -69,8 +64,7 @@ public class User {
     }
 
     /**
-     * 🔁 hashCode
-     * Returnerar ett unikt hash-värde baserat på userId – behövs för hash-baserade collection-klasser.
+     * Returnerar ett unikt hash-värde baserat på userId
      */
     @Override
     public int hashCode() {

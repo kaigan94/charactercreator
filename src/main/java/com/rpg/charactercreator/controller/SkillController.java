@@ -9,21 +9,21 @@ import java.util.List;
 
 /**
  * Controller för att hantera färdigheter (skills).
- * Base URL: /skills
+ * Bas-URL: /skills
  */
 @RestController
 @RequestMapping("/skills")
 public class SkillController {
 
-    private final SkillService skillService;
+    private final SkillService skillService; // Service-lager för logiken kring skills
 
     public SkillController(SkillService skillService) {
-        this.skillService = skillService;
+        this.skillService = skillService; // injicerar service
     }
 
     /**
      * 📄 GET /skills
-     * Hämtar alla färdigheter som finns i systemet.
+     * Hämtar alla färdigheter från databasen.
      */
     @GetMapping
     public ResponseEntity<List<Skill>> getAllSkills() {
@@ -32,7 +32,7 @@ public class SkillController {
 
     /**
      * ➕ POST /skills
-     * Skapar en ny skill.
+     * Skapar en ny skill och sparar den i databasen.
      */
     @PostMapping
     public ResponseEntity<Skill> createSkill(@RequestBody Skill skill) {
@@ -42,7 +42,7 @@ public class SkillController {
 
     /**
      * ❌ DELETE /skills/{id}
-     * Tar bort en färdighet baserat på ID.
+     * Tar bort en skill baserat på dess ID.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSkill(@PathVariable Long id) {
