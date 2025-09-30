@@ -13,7 +13,7 @@ public class AppConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setMaxAge(3600L); // cache preflight
+        config.setMaxAge(3600L);
         config.setAllowedOrigins(List.of("http://localhost:5173")); // tillåt frontend
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // tillåt metoder
         config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-XSRF-TOKEN")); // tillåt headers

@@ -9,7 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository; //aktiverar csrf
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
@@ -30,15 +30,15 @@ public class SecurityConfig {
         reqHandler.setCsrfRequestAttributeName("_csrf");
 
         http
-                // ⬇️ Vilka endpoints som är öppna och vilka som kräver inloggning
+                // Vilka endpoints som är öppna och vilka som kräver inloggning
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/csrf-token", "/auth/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/login", "/logout").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/characters/**").authenticated()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
-                // ⬇️ Inloggningsinställningar (Spring Security formLogin)
+                // 🔺Inloggningsinställningar (Spring Securitys formLogin)
                 .formLogin(form -> form
                         .loginProcessingUrl("/login")
                         .usernameParameter("username")
@@ -46,20 +46,20 @@ public class SecurityConfig {
                         .successHandler((req, res, auth) -> res.setStatus(200))
                         .failureHandler((req, res, ex) -> res.setStatus(401))
                 )
-                // ⬇️ Utloggning
+                // Utloggning
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessHandler((req, res, auth) -> res.setStatus(200))
                 )
-                // ⬇️ CSRF-skydd aktiverat, men vissa endpoints undantas
+                // 🔺CSRF-skydd aktiverat, men vissa endpoints undantas
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfRepo)
                         .csrfTokenRequestHandler(reqHandler)
                         .ignoringRequestMatchers("/auth/**", "/login", "/logout")
                 )
-                // ⬇️ Lägger till filter som skickar CSRF-token som cookie
+                // Lägger till filter som skickar CSRF-token som cookie
                 .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
-                // ⬇️ Tillåter CORS (från AppConfig)
+                // Tillåter CORS (från AppConfig)
                 .cors(Customizer.withDefaults());
 
         return http.build();
