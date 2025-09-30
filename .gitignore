@@ -3,6 +3,10 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 *.log
 
+### Docker ###
+.docker/
+docker-compose.override.yml
+
 ### IntelliJ ###
 .idea/
 *.iws
@@ -18,7 +22,6 @@ dist/
 
 ### Node / React ###
 node_modules/
-build/
 .env
 .env.local
 .env.development.local
