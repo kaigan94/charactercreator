@@ -3,10 +3,6 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 *.log
 
-### Docker ###
-.docker/
-docker-compose.override.yml
-
 ### IntelliJ ###
 .idea/
 *.iws
